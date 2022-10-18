@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeLeaf.org" xmlns:border-collapse="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="ISO-8859-1">
+    <title>Employee Management</title>
+
+</head>
+<body>
+<div align="center">
+    <h1>employees</h1>
+    <br/>
+    <table border="1" cellpadding="10" border-collapse:collapse;>
+        <thead>
+        <tr>
+            <td>ID</td>
+            <td>Name</td>
+            <td>Mobile Number</td>
+            <td>Mail</td>
+            <td>Address</td>
+            <td>Aadhar</td>
+            <td>Pan Number</td>
+            <td>Company Name</td>
+            <td>Experience</td>
+            <td>Role</td>
+            <td>Date Of Birth</td>
+            <td>Date Of Join</td>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="trainer : ${showTrainers}">
+            <td th:text="${trainer.id}">id</td>
+            <td th:text="${trainer.name}">name</td>
+            <td th:text="${trainer.mobileNumber}">mobile number</td>
+            <td th:text="${trainer.mail}">mail</td>
+            <td th:text="${trainer.address}">address</td>
+            <td th:text="${trainer.aadharNumber}">aadhar</td>
+            <td th:text="${trainer.panNumber}">pan number</td>
+            <td th:text="${trainer.companyName}">company Name</td>
+            <td th:text="${trainer.experience}">experience</td>
+            <td th:text="${trainer.role}">role</td>
+            <td th:text="${trainer.dateOfBirth}">dateOfBirth</td>
+            <td th:text="${trainer.dateOfJoin}">dateOfJoin</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

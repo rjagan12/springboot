@@ -33,7 +33,6 @@ public class Employee {
     @Column(name = "mail")
     private String mail;
 
-
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
@@ -140,5 +139,6 @@ public class Employee {
    }
 
     public void setId(int id) {
+        this.id = id;
     }
 }

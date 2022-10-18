@@ -56,7 +56,7 @@ public interface EmployeeService {
      * @param {@link int}traineeid
      * @return {@link Trainee }return traineeDetailswith respect to id
      */
-    Map<String, Object> showTraineeDetailsById(int traineeId) throws NullListException;
+    Trainee showTraineeDetailsById(int traineeId) throws NullListException;
 
     /**
      * Method used to update trainee Details by id with
@@ -97,7 +97,7 @@ public interface EmployeeService {
      * @param {@link int}trainerId
      * @return {@link Trainer }return trainerDetails or null
      */
-    Map<String, Object> showTrainerDetailsById(int trainerId) throws NullListException;
+    Trainer showTrainerDetailsById(int trainerId) throws NullListException;
 
     /**
      * Method used to get all  traineeDetails by id
@@ -130,7 +130,7 @@ public interface EmployeeService {
      * @param {@link int, Trainer}traineeId, trainerIds
      * @return {@link String}returns status Assigned por not
      */
-    String assignTrainers(int traineeId, String trainerId);
+    String assignTrainers(int traineeId, List<Integer> trainerId);
 
     /**
      * Method used to assign trainees to trainer with respect
@@ -148,7 +148,7 @@ public interface EmployeeService {
      * @param {@link int, String}trainerId trainerIds
      * @return {@link String }return status removed or not
      */
-    String removeAssignedTrainee(int trainerId, String traineeId);
+    String removeAssignedTrainee(int trainerId, List<Integer> traineeId);
 
     /**
      * Method used to remove assigned trainer from trainee
@@ -157,7 +157,7 @@ public interface EmployeeService {
      * @param {@link int int}traineeId trainerId
      * @return {@link String }return status removed or not
      */
-    String removeAssignedTrainer(int traineeId, int trainerId);
+    String removeAssignedTrainer(int traineeId, List<Integer> trainerId);
 
     /**
      *
@@ -177,4 +177,8 @@ public interface EmployeeService {
      * @return {@link Map<String, Object> }returns the traineeDetails
      */
     Map<String, Object> getTraineeObject(Trainee trainee);
+
+    List<Trainer> getAllTrainers();
+
+    List<Trainee> getAllTrainees();
 }

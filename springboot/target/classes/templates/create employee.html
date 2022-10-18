@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeLeaf.org">
+<head>
+  <meta charset="ISO-8859-1">
+  <title>Employee Management</title>
+</head>
+<body>
+<div align="center">
+  <h1>Create Employee</h1>
+  <form action="/" th:action="@{/create employee}" th:object="${trainer}" method="save_trainer">
+    <table>
+      <tr>
+        <td>Name :</td>
+        <td><input type="text" th:field="*{name}"/> </td>
+      </tr>
+      <tr>
+        <td>Mobile Number :</td>
+        <td><input type="text" th:field="*{mobile Number}"/> </td>
+      </tr>
+      <tr>
+        <td>Mail :</td>
+        <td><input type="text" th:field="*{mail}"/> </td>
+      </tr>
+      <tr>
+        <td>Pan Number :</td>
+        <td><input type="text" th:field="*{pan Number}"/> </td>
+      </tr>
+      <tr>
+        <td>Company Name:</td>
+        <td><input type="text" th:field="*{company Name}"/> </td>
+      </tr>
+      <tr>
+        <td>Aadhar Number :</td>
+        <td><input type="text" th:field="*{Aadhar Number}"/> </td>
+      </tr>
+      <tr>
+        <td>Experience :</td>
+        <td><input type="number" th:field="*{experience}"/> </td>
+      </tr>
+      <tr>
+        <td>Date Of Birth:</td>
+        <td><input type="date" th:field="*{dateOfBirth}"/> </td>
+      </tr>
+      <tr>
+        <td>Date Of Join:</td>
+        <td><input type="date" th:field="*{dateOfJoin}"/> </td>
+      </tr>
+      <tr>
+        <td>Address:</td>
+        <td><input type="text" th:field="*{address}"/> </td>
+      </tr>
+      <tr>
+        <td>Role:</td>
+        <td><input type="text" th:field="*{role}"/> </td>
+      </tr>
+      <tr>
+        <td colspan="2"><button type="submit">Save</button></td>
+
+      </tr>
+    </table>
+
+  </form>
+</div>
+</body>
+</html>

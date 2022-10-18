@@ -1,5 +1,6 @@
 package com.i2i.springboot.controller;
 
+import com.i2i.springboot.dto.AssociateTrainerDto;
 import com.i2i.springboot.dto.TraineeDto;
 import com.i2i.springboot.exception.NullListException;
 import com.i2i.springboot.helperclass.HelperDto;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,7 +28,7 @@ import java.util.Map;
  * @author Jaganathan R
  */
 @RestController
-@RequestMapping("/employee_portal")
+@RequestMapping("/employee_assist")
 public class TraineeController  {
 
     private static final String inValidData = (" ##********* //INVALID DATA// ************## ");
@@ -46,7 +48,7 @@ public class TraineeController  {
     public String addTrainee(@Valid @RequestBody TraineeDto traineeDto) throws Exception {
         String message = " Failed :: Not Inserted ";
         if (null != traineeDto) {
-            Trainee trainee = HelperDto.traineeDtoToTrainee(traineeDto);
+            Trainee trainee = HelperDto.traineeDtoToTrainee(traineeDto,false);
             employeeService.addTraineeDetails(trainee);
             return "SUCCESSFULLY :: INSERTED";
         } else{
@@ -72,9 +74,11 @@ public class TraineeController  {
      */
     @PutMapping("/update_trainee")
     public String updateTrainee(@Valid @RequestBody TraineeDto traineeDto) {
-        int id = traineeDto.getId();
-        Trainee trainee = HelperDto.traineeDtoToTrainee(traineeDto);
-        return employeeService.modifyTraineeDetailsById(id, trainee);
+
+        Trainee trainee = HelperDto.traineeDtoToTrainee(traineeDto,false);
+        int id = trainee.getId();
+       return employeeService.modifyTraineeDetailsById(id, trainee);
+
     }
 
     /**
@@ -83,12 +87,12 @@ public class TraineeController  {
      * @return {@link Trainee}returns trainee object with respect id
      */
     @GetMapping("/trainee/{id}")
-    public Map<String, Object> getTraineeById(@PathVariable("id") int id )
+    public TraineeDto getTraineeById(@PathVariable("id") int id )
             throws NullListException {
-        Map<String, Object> trainee = employeeService.showTraineeDetailsById(id);
-
+        Trainee trainee = employeeService.showTraineeDetailsById(id);
+        TraineeDto traineeDto = HelperDto.traineeToDto(trainee, true);
         if (trainee != null ) {
-            return trainee;
+            return traineeDto;
         }
         throw new NullListException("ID NOT FOUND");
     }
@@ -110,16 +114,17 @@ public class TraineeController  {
      * @param {@link @pathVariable int, String}trainerId,traineeIds
      * @return {String}Status of trainer details
      */
-    @PutMapping("/assign_trainer/{traineeId}/{trainerId}")
-    public String assignTrainer(@PathVariable("traineeId") int traineeId,
-                                @PathVariable("trainerId") String trainerId) throws Exception {
+    @PutMapping("/assign_trainer")
+    public String assignTrainer(@RequestBody AssociateTrainerDto assign) throws Exception {
+        int traineeId = assign.getTraineeId();
+        List<Integer> trainerId = assign.getTrainerId();
          return employeeService.assignTrainers(traineeId, trainerId);
     }
 
-    @DeleteMapping("/unassign_trainer/{traineeId}/{trainerId}")
-    public String unAssignTrainer(@PathVariable("traineeId") int traineeId,
-                                  @PathVariable("trainerId") int trainerId) throws Exception {
-
+    @DeleteMapping("/unassign_trainer")
+    public String unAssignTrainer(@RequestBody AssociateTrainerDto assign) throws Exception {
+        int traineeId = assign.getTraineeId();
+        List<Integer> trainerId = assign.getTrainerId();
         return employeeService.removeAssignedTrainer(traineeId, trainerId);
     }
 
@@ -145,8 +150,11 @@ public class TraineeController  {
      */
     @ExceptionHandler(value = MethodArgumentNotValidException.class )
     public String exceptionHandler(MethodArgumentNotValidException exception) {
-
-        return " INVALID Entry " + exception.getMessage();
+        Map<String, String> errors = new HashMap<>();
+        exception.getBindingResult().getFieldErrors().forEach(error -> {
+            errors.put(error.getField(), error.getDefaultMessage());
+            });
+        return " INVALID Entry " + errors;
     }
 
     @ExceptionHandler(value = RuntimeException.class)

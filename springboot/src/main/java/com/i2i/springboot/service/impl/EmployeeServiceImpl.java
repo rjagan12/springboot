@@ -99,11 +99,11 @@ public class EmployeeServiceImpl implements EmployeeService {
      * @return {@link Trainee }return trainee Details with respect to id
      */
     @Override
-    public Map<String, Object> showTraineeDetailsById(int traineeId) throws NullListException  {
+    public Trainee showTraineeDetailsById(int traineeId) throws NullListException  {
 
        if (traineeRepository.existsById(traineeId)) {
-           Trainee trainee = traineeRepository.getById(traineeId);
-           return getTraineeObject(trainee);
+            return traineeRepository.getById(traineeId);
+           //return getTraineeObject(trainee);
        }
         throw new NullListException(" ***** THERE IS NO ID ***** ");
     }
@@ -120,7 +120,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         if (traineeRepository.existsById(traineeId)) {
             traineeRepository.save(traineeDetails);
-            return "THE ID" + traineeId + "IS UPDATED SUCCESSFULLY ";
+            return "THE ID : " + traineeId + " IS UPDATED SUCCESSFULLY ";
         } else {
             return "\" FAILED  :: THERE IS NO ID TO UPDATE \"";
         }
@@ -190,11 +190,10 @@ public class EmployeeServiceImpl implements EmployeeService {
      * @return {@link Trainer }return trainerDetails or null
      */
     @Override
-    public Map<String, Object> showTrainerDetailsById(int trainerId) throws NullListException {
+    public Trainer showTrainerDetailsById(int trainerId) throws NullListException {
 
         if (trainerRepository.existsById(trainerId)) {
-            Trainer trainer = trainerRepository.getById(trainerId);
-            return getTrainerObject(trainer);
+            return trainerRepository.getById(trainerId);
         } else {
             throw new NullListException("**** THERE IS NO RECORD *****");
         }
@@ -255,16 +254,15 @@ public class EmployeeServiceImpl implements EmployeeService {
      * @return {@link String}returns status Assigned por not
      */
     @Override
-    public String assignTrainers(int traineeId, String trainerId) {
+    public String assignTrainers(int traineeId, List<Integer> trainerIds) {
 
         String message = "Failed :: Trainee Assign Is Not Updated";
         Trainee trainee = null;
         if (traineeRepository.existsById(traineeId)) {
             trainee = traineeRepository.getById(traineeId);
-            String[] trainerIds = trainerId.split(",");
 
-            for (int i = 0; i < trainerIds.length; i++) {
-                int id = Integer.valueOf(trainerIds[i]);
+            for (int i = 0; i < trainerIds.size(); i++) {
+                int id = trainerIds.get(i);
                 if (trainerRepository.existsById(id)) {
                     Trainer trainer = trainerRepository.getById(id);
                     trainee.getTrainerDetails().add(trainer);
@@ -309,46 +307,30 @@ public class EmployeeServiceImpl implements EmployeeService {
      * @return {@link String }return status removed or not
      */
     @Override
-    public String removeAssignedTrainee(int trainerId, String traineeId) {
+    public String removeAssignedTrainee(int trainerId, List<Integer> traineeId) {
 
         if (trainerRepository.existsById(trainerId)) {
             Trainer trainer = trainerRepository.getById(trainerId);
             List<Trainee> trainees = trainer.getTraineeDetails();
 
-            if (traineeId.length() > 1) {
-                String[] traineeIds = traineeId.split(",");
+            for (int i = 0; i < trainees.size(); i++) {
 
-                for (int i = 0; i < trainees.size(); i++) {
+                for(int j = 0; j < traineeId.size(); j++) {
+                    int id = traineeId.get(j);
 
-                    for (int j = 0; j < traineeIds.length; j++) {
-                        int id = Integer.valueOf(traineeIds[j]);
-
-                        if ((trainees.get(i).getId()) == id) {
-                            trainees.remove(i);
-                        }
-                    }
-                    trainer.setTraineeDetails(trainees);
-                    trainerRepository.save(trainer);
-                }
-
-                return " SUCCESS ::TRAINEE REMOVED SUCCESSFULLY";
-            } else {
-                int id = Integer.parseInt(traineeId);
-                for (int i = 0; i < trainees.size(); i++) {
-                    if ((trainees.get(i).getId()) == id) {
+                    if ((trainees.get(i).getId()) == id ) {
                         trainees.remove(i);
                     } else {
                         return "THERE IS NO TRAINEE ID TO REMOVE";
                     }
                 }
-                trainer.setTraineeDetails(trainees);
-                trainerRepository.save(trainer);
-                return "TRAINEE REMOVED SUCCESSFULLY";
             }
-        } else {
+            trainer.setTraineeDetails(trainees);
+            trainerRepository.save(trainer);
+            return "TRAINEE REMOVED SUCCESSFULLY";
+        }else {
             return "THERE IS NO TRAINER ID :: PLEASE ENTER VALID ID";
         }
-
     }
  
     /**
@@ -359,7 +341,7 @@ public class EmployeeServiceImpl implements EmployeeService {
      * @return {@link String }return status removed or not
      */
     @Override
-    public String removeAssignedTrainer(int traineeId, int trainerId)  {
+    public String removeAssignedTrainer(int traineeId,List<Integer> trainerId) {
 
         if (traineeRepository.existsById(traineeId)) {
             Trainee trainee = traineeRepository.getById(traineeId);
@@ -367,10 +349,14 @@ public class EmployeeServiceImpl implements EmployeeService {
 
             for (int i = 0; i < trainers.size(); i++) {
 
-                if ((trainers.get(i).getId()) == trainerId) {
-                    trainers.remove(i);
-                } else {
-                    return "THERE IS NO TRAINEE ID TO REMOVE";
+                for(int j = 0; j < trainerId.size(); j++) {
+                    int id = trainerId.get(j);
+
+                    if ((trainers.get(i).getId()) == id ) {
+                        trainers.remove(i);
+                    } else {
+                        return "THERE IS NO TRAINER ID TO REMOVE";
+                    }
                 }
             }
             trainee.setTrainerDetails(trainers);
@@ -440,5 +426,14 @@ public class EmployeeServiceImpl implements EmployeeService {
         return map;
     }
 
+    @Override
+    public List<Trainer> getAllTrainers() {
+        return  trainerRepository.findByIsDeleted(false);
+    }
+
+    @Override
+    public List<Trainee> getAllTrainees() {
+        return  traineeRepository.findByIsDeleted(false);
+    }
 
 }

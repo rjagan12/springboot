@@ -5,12 +5,15 @@ import com.i2i.springboot.dto.TrainerDto;
 import com.i2i.springboot.model.Trainee;
 import com.i2i.springboot.model.Trainer;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class HelperDto {
 
-    public static TraineeDto traineeToDto(Trainee trainee) {
+    public static TraineeDto traineeToDto(Trainee trainee,boolean flag) {
 
         TraineeDto traineeDto = new TraineeDto();
-        traineeDto.setId(traineeDto.getId());
+        traineeDto.setId(trainee.getId());
         traineeDto.setMail(trainee.getMail());
         traineeDto.setName(trainee.getName());
         traineeDto.setRole(trainee.getRole());
@@ -18,15 +21,29 @@ public class HelperDto {
         traineeDto.setAddress(trainee.getAddress());
         traineeDto.setIsDeleted(trainee.getIsDeleted());
         traineeDto.setAadharNumber(trainee.getAadharNumber());
-        traineeDto.setTrainer(trainee.getTrainerDetails());
         traineeDto.setPassOutYear(trainee.getPassOutYear());
         traineeDto.setDateOfBirth(trainee.getDateOfBirth());
         traineeDto.setPanNumber(trainee.getPanNumber());
         traineeDto.setDateOfJoin(trainee.getDateOfJoin());
+
+        List<Trainer> trainers = trainee.getTrainerDetails();
+        if (null != trainers && flag) {
+            traineeDto.setTrainerDetails(convertTrainersToDto(trainers));
+        }
+
         return traineeDto;
     }
 
-    public static Trainee traineeDtoToTrainee(TraineeDto traineeDto) {
+    private static List<TrainerDto> convertTrainersToDto(List<Trainer> trainers) {
+        if (null != trainers) {
+            return trainers.stream().map(trainer -> trainerToDto(trainer, false))
+                    .collect(Collectors.toList());
+        }
+        return null;
+
+    }
+
+    public static Trainee traineeDtoToTrainee(TraineeDto traineeDto,boolean flag) {
 
         Trainee trainee = new Trainee();
         trainee.setId(traineeDto.getId());
@@ -41,13 +58,18 @@ public class HelperDto {
         trainee.setPassOutYear(traineeDto.getPassOutYear());
         trainee.setPanNumber(traineeDto.getPanNumber());
         trainee.setMobileNumber(traineeDto.getMobileNumber());
-        trainee.setTrainerDetails(traineeDto.getTrainer());
+
+       List<TrainerDto> trainersDto = traineeDto.getTrainerDetails();
+        if (null != trainersDto && flag) {
+            trainee.setTrainerDetails(convertTrainersDtoToTrainers(trainersDto));
+       }
+
         return trainee;
     }
-    public static TrainerDto trainerToDto(Trainer trainer) {
+    public static TrainerDto trainerToDto(Trainer trainer,boolean flag) {
 
         TrainerDto trainerDto = new TrainerDto();
-        trainerDto.setId(trainerDto.getId());
+        trainerDto.setId(trainer.getId());
         trainerDto.setMail(trainer.getMail());
         trainerDto.setName(trainer.getName());
         trainerDto.setRole(trainer.getRole());
@@ -55,16 +77,30 @@ public class HelperDto {
         trainerDto.setAddress(trainer.getAddress());
         trainerDto.setIsDeleted(trainer.getIsDeleted());
         trainerDto.setAadharNumber(trainer.getAadharNumber());
-        trainerDto.setTrainee(trainer.getTraineeDetails());
         trainerDto.setCompanyName(trainer.getcompanyName());
         trainerDto.setDateOfBirth(trainer.getDateOfBirth());
         trainerDto.setPanNumber(trainer.getPanNumber());
         trainerDto.setDateOfJoin(trainer.getDateOfJoin());
         trainerDto.setExperience(trainerDto.getExperience());
+
+        List<Trainee> trainees = trainer.getTraineeDetails();
+        if (null != trainees && flag ) {
+            trainerDto.setTraineeDetails(convertTraineesToDto(trainees));
+        }
         return trainerDto;
     }
 
-    public static Trainer trainerDtoToTrainer(TrainerDto trainerDto) {
+    private static List<TraineeDto> convertTraineesToDto(List<Trainee> trainees) {
+
+        if (null != trainees) {
+            return trainees.stream().map(trainee -> traineeToDto(trainee, false))
+                    .collect(Collectors.toList());
+
+        }
+        return null;
+    }
+
+    public static Trainer trainerDtoToTrainer(TrainerDto trainerDto,boolean flag) {
 
         Trainer trainer = new Trainer();
         trainer.setId(trainerDto.getId());
@@ -79,8 +115,28 @@ public class HelperDto {
         trainer.setcompanyName(trainerDto.getCompanyName());
         trainer.setPanNumber(trainerDto.getPanNumber());
         trainer.setMobileNumber(trainerDto.getMobileNumber());
-        trainer.setTraineeDetails(trainerDto.getTrainee());
         trainer.setExperience(trainerDto.getExperience());
+        List<TraineeDto> traineesDto = trainerDto.getTraineeDetails();
+        if ((null != traineesDto) && (flag) ) {
+            trainer.setTraineeDetails(convertTraineesDtoToTrainees(traineesDto));
+        }
         return trainer;
+    }
+
+    private static List<Trainee> convertTraineesDtoToTrainees(List<TraineeDto> traineesDto) {
+        if (null != traineesDto) {
+            return traineesDto.stream().map(trainee -> traineeDtoToTrainee(trainee,false))
+                    .collect(Collectors.toList());
+        }
+        return null;
+    }
+
+    private static List<Trainer> convertTrainersDtoToTrainers(List<TrainerDto> trainersDto) {
+        if(null != trainersDto){
+            return trainersDto.stream().map(trainer -> trainerDtoToTrainer(trainer,false))
+                    .collect(Collectors.toList());
+        }
+
+        return null;
     }
 }

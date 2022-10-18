@@ -1,5 +1,7 @@
 package com.i2i.springboot.controller;
 
+import com.i2i.springboot.dto.AssociateTraineeDto;
+import com.i2i.springboot.dto.AssociateTrainerDto;
 import com.i2i.springboot.dto.TrainerDto;
 import com.i2i.springboot.exception.NullListException;
 import com.i2i.springboot.helperclass.HelperDto;
@@ -22,6 +24,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.time.format.DateTimeParseException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,7 +39,7 @@ import java.util.Map;
  * @author Jaganathan R
  */
 @RestController
-@RequestMapping("/spring")
+@RequestMapping("/employee_assist")
 public class TrainerController {
 
     private static final String line = ("******************************************************");
@@ -44,15 +48,15 @@ public class TrainerController {
     private EmployeeServiceImpl employeeService ;
 
     /**
-     * Method used to put or update trainer details  to server
+     * Method used to put or uppdate trainer details  to server
      * @param {@link @RequestBody Trainer}trainer
      * @return {String}Status of trainer details
      */
     @PutMapping("/update_trainer")
-    public String updateTrainer(@Valid @RequestBody TrainerDto trainerDto )  {
+    private String updateTrainer(@Valid @RequestBody TrainerDto trainerDto )  {
 
         int id = trainerDto.getId();
-        Trainer trainer = HelperDto.trainerDtoToTrainer(trainerDto);
+        Trainer trainer = HelperDto.trainerDtoToTrainer(trainerDto,false);
         return employeeService.modifyTrainerDetailsById(id, trainer);
     }
 
@@ -61,19 +65,19 @@ public class TrainerController {
      * @param {@link @pathVariable int, String}trainerId,traineeIds
      * @return {String}Status of trainer details
      */
-    @PutMapping("/assign_trainee/{trainerId}/{traineeId}")
-    public String assignTrainee(@PathVariable int trainerId,
-                                @PathVariable String traineeId)  {
+    @PutMapping("/assign_trainee")
+    private String assignTrainee(@RequestBody AssociateTraineeDto assign) {
+
         String message = "Failed :: Trainee Assign Is Not Updated";
-       Trainer trainer = employeeService.getTrainerDetailsById(trainerId);
+        int trainerId = assign.getTrainerId();
+        Trainer trainer = employeeService.getTrainerDetailsById(trainerId);
+        List<Integer> traineeIds = assign.getTraineeId();
 
        if (null != trainer) {
-           String[] traineeIds = traineeId.split(",");
 
-           for (int i = 0; i < traineeIds.length; i++) {
-               int id = Integer.valueOf(traineeIds[i]);
+           for (int i = 0; i < traineeIds.size(); i++) {
+               int id = traineeIds.get(i);
                Trainee trainee = employeeService.getTraineeDetailsById(id);
-
                if (trainee != null) {
                    trainer.getTraineeDetails().add(trainee);
                } else {
@@ -93,9 +97,9 @@ public class TrainerController {
      * @return {String}Status of trainer details
      */
     @PostMapping("/save_trainer")
-    public String addTrainer(@Valid @RequestBody TrainerDto trainerDto) {
+    private String addTrainer(@Valid @RequestBody TrainerDto trainerDto) {
 
-        Trainer trainer = HelperDto.trainerDtoToTrainer(trainerDto);
+        Trainer trainer = HelperDto.trainerDtoToTrainer(trainerDto,false);
         return employeeService.addTrainerDetails(trainer);
     }
     /**
@@ -104,16 +108,17 @@ public class TrainerController {
      * @return {String} returns the status message
      */
     @DeleteMapping("/delete_trainer/{id}")
-    public String deleteTrainerById(@PathVariable("id") int id)
+    private String deleteTrainerById(@PathVariable("id") int id)
             throws Exception {
 
         return employeeService.deleteTrainerDetails(id);
     }
 
-    @DeleteMapping("/unassign_trainee/{trainerId}/{traineeId}")
-    public String unAssignTrainee(@PathVariable int trainerId,
-                                  @PathVariable String traineeId)  {
+    @DeleteMapping("/unassign_trainee")
+    private String unAssignTrainee(@RequestBody AssociateTraineeDto assign)  {
 
+        int trainerId = assign.getTrainerId();
+        List<Integer> traineeId = assign.getTraineeId();
         return employeeService.removeAssignedTrainee(trainerId, traineeId);
     }
 
@@ -127,10 +132,12 @@ public class TrainerController {
      */
 
     @GetMapping("/trainer/{id}")
-    public Map<String, Object> getTrainerById(@PathVariable("id") int id ) throws NullListException {
-        Map<String, Object> trainer = employeeService.showTrainerDetailsById(id);
+    private TrainerDto getTrainerById(@PathVariable("id") int id ) throws NullListException {
+        Trainer trainer = employeeService.showTrainerDetailsById(id);
         if (null != trainer) {
-            return trainer;
+            TrainerDto trainerDto = HelperDto.trainerToDto(trainer,true);
+            return trainerDto;
+
         } else {
             throw new NullListException("Id Not Found ");
         }
@@ -145,7 +152,7 @@ public class TrainerController {
      *
      */
     @GetMapping("/trainers")
-    public List<Map<String, Object>> getAllTrainers() {
+    private List<Map<String, Object>> getAllTrainers() {
 
         List<Map<String, Object>> showTrainers = null;
         showTrainers = employeeService.showAllTrainerDetails();
@@ -160,7 +167,7 @@ public class TrainerController {
      * @return {@link String}return the exception with message
      */
     @ExceptionHandler(value = NullListException.class )
-    public String exceptionHandler(NullListException exception) {
+    private String exceptionHandler(NullListException exception) {
 
         return " INVALID RECORD " + exception.getMessage();
     }
@@ -173,14 +180,25 @@ public class TrainerController {
      * @return {@link String}return the exception with message
      */
     @ExceptionHandler(value = MethodArgumentNotValidException.class )
-    public String exceptionHandler(MethodArgumentNotValidException exception) {
+    private String exceptionHandler(MethodArgumentNotValidException exception) {
 
-        return " INVALID Entry " + exception.getMessage();
+        Map<String, String> errors = new HashMap<>();
+        exception.getBindingResult().getFieldErrors().forEach(error -> {
+            errors.put(error.getField(), error.getDefaultMessage());
+        });
+        return " INVALID Entry " + errors;
+    }
+    @ExceptionHandler(value = DateTimeParseException.class )
+    private String exceptionHandler(DateTimeParseException exception) {
+
+        throw new DateTimeParseException("Invalid Date Format",exception.getMessage(),1);
     }
 
     @ExceptionHandler(value = RuntimeException.class)
-    public String exceptionHandler(RuntimeException exception) {
+    private String exceptionHandler(RuntimeException exception) {
 
-        return "Exception " + exception.getMessage();
+        return " INVALID Entry " + exception.getMessage();
+
     }
+
 }
